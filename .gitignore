@@ -1,0 +1,32 @@
+# Ignore object and binary files
+obj/
+bin/
+
+# Ignore editor and system files
+*.swp
+*~
+.DS_Store
+
+# Ignore build files
+*.o
+*.out
+*.d
+
+# Ignore logs
+*.log
+
+# Ignore coverage reports
+coverage/
+
+# Ignore dependency directories
+node_modules/
+__pycache__/
+
+# Ignore temporary files
+*.tmp
+*.bak
+*.backup
+
+# Ignore user-specific config files
+.vscode/
+.idea/
