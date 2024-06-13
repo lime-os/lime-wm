@@ -16,7 +16,7 @@ static const long event_mask =
     ButtonReleaseMask |
     PointerMotionMask;
 
-static void _configure_window(Display *display, XConfigureRequestEvent *configure_request)
+static void configure_window(Display *display, XConfigureRequestEvent *configure_request)
 {
     XWindowChanges changes;
     changes.x = configure_request->x;
@@ -34,12 +34,12 @@ static void _configure_window(Display *display, XConfigureRequestEvent *configur
         &changes);
 }
 
-static void _focus_window(Display *display, Window window)
+static void focus_window(Display *display, Window window)
 {
     XRaiseWindow(display, window);
 }
 
-static void _start_dragging(Display *display, Window window, int mouse_x, int mouse_y)
+static void start_dragging(Display *display, Window window, int mouse_x, int mouse_y)
 {
     XWindowAttributes attr;
     if (!XGetWindowAttributes(display, window, &attr))
@@ -55,7 +55,7 @@ static void _start_dragging(Display *display, Window window, int mouse_x, int mo
     window_start_y = attr.y;
 }
 
-static void _update_dragging(Display *display, int mouse_x, int mouse_y)
+static void update_dragging(Display *display, int mouse_x, int mouse_y)
 {
     int dx = mouse_x - drag_start_x;
     int dy = mouse_y - drag_start_y;
@@ -63,12 +63,12 @@ static void _update_dragging(Display *display, int mouse_x, int mouse_y)
     XMoveWindow(display, dragged_window, window_start_x + dx, window_start_y + dy);
 }
 
-static void _stop_dragging()
+static void stop_dragging()
 {
     is_dragging = false;
 }
 
-static void _register_frame(Window frame_window, Window child_window)
+static void register_frame(Window frame_window, Window child_window)
 {
     FrameMap *buffer = realloc(frame_map, (frame_map_size + 1) * sizeof(FrameMap));
     if (buffer == NULL)
@@ -83,7 +83,7 @@ static void _register_frame(Window frame_window, Window child_window)
     frame_map_size++;
 }
 
-static bool _is_frame(Window window)
+static bool is_frame(Window window)
 {
     for (int i = 0; i < frame_map_size; i++)
     {
@@ -95,7 +95,7 @@ static bool _is_frame(Window window)
     return false;
 }
 
-static Window *_find_parent_frame(Window window)
+static Window *find_parent_frame(Window window)
 {
     for (int i = 0; i < frame_map_size; i++)
     {
@@ -108,7 +108,7 @@ static Window *_find_parent_frame(Window window)
     return NULL;
 }
 
-static void _unregister_frame(Window frame_window)
+static void unregister_frame(Window frame_window)
 {
     int wasFound = false;
 
@@ -142,7 +142,7 @@ static void _unregister_frame(Window frame_window)
     }
 }
 
-static void _draw_frame(Display *display, Window frame_window, int width, int height)
+static void draw_frame(Display *display, Window frame_window, int width, int height)
 {
     cairo_surface_t *surface;
     cairo_t *cr;
@@ -165,14 +165,14 @@ static void _draw_frame(Display *display, Window frame_window, int width, int he
     cairo_surface_destroy(surface);
 }
 
-static void _redraw_frame(Display *display, Window frame_window)
+static void redraw_frame(Display *display, Window frame_window)
 {
     XWindowAttributes attr;
     XGetWindowAttributes(display, frame_window, &attr);
-    _draw_frame(display, frame_window, attr.width, attr.height);
+    draw_frame(display, frame_window, attr.width, attr.height);
 }
 
-static void _create_frame(Display *display, Window root_window, Window target_window)
+static void create_frame(Display *display, Window root_window, Window target_window)
 {
     XWindowAttributes attr;
     XGetWindowAttributes(display, target_window, &attr);
@@ -184,7 +184,7 @@ static void _create_frame(Display *display, Window root_window, Window target_wi
         attr.width, attr.height,
         2, 0x000000, 0xFFFFFF);
 
-    _register_frame(frame_window, target_window);
+    register_frame(frame_window, target_window);
 
     XSelectInput(display, frame_window, event_mask);
     XAddToSaveSet(display, target_window);
@@ -192,35 +192,31 @@ static void _create_frame(Display *display, Window root_window, Window target_wi
     XMapWindow(display, frame_window);
     XMapWindow(display, target_window);
 
-    _draw_frame(display, frame_window, attr.width, attr.height + 15);
+    draw_frame(display, frame_window, attr.width, attr.height + 15);
 }
 
-static void _destroy_frame(Display *display, Window frame_window)
+static void destroy_frame(Display *display, Window frame_window)
 {
     XDestroyWindow(display, frame_window);
-    _unregister_frame(frame_window);
+    unregister_frame(frame_window);
 }
-
-// ---
-// Handlers
-// ---
 
 HANDLE(ConfigureRequest)
 {
-    _configure_window(display, &event->xconfigurerequest);
+    configure_window(display, &event->xconfigurerequest);
 }
 
 HANDLE(MapRequest)
 {
-    _create_frame(display, root_window, event->xmaprequest.window);
+    create_frame(display, root_window, event->xmaprequest.window);
 }
 
 HANDLE(DestroyNotify)
 {
-    Window *frame_window = _find_parent_frame(event->xdestroywindow.window);
+    Window *frame_window = find_parent_frame(event->xdestroywindow.window);
     if (frame_window != NULL)
     {
-        _destroy_frame(display, *frame_window);
+        destroy_frame(display, *frame_window);
     }
 }
 
@@ -230,11 +226,11 @@ HANDLE(ButtonPress)
     {
         XButtonEvent button_event = event->xbutton;
 
-        _focus_window(display, button_event.window);
+        focus_window(display, button_event.window);
 
         if (is_dragging == false)
         {
-            _start_dragging(display, button_event.window, button_event.x_root, button_event.y_root);
+            start_dragging(display, button_event.window, button_event.x_root, button_event.y_root);
         }
     }
 }
@@ -243,7 +239,7 @@ HANDLE(ButtonRelease)
 {
     if (event->xbutton.button == Button1 && is_dragging == true)
     {
-        _stop_dragging();
+        stop_dragging();
     }
 }
 
@@ -252,7 +248,7 @@ HANDLE(MotionNotify)
     if (is_dragging == true)
     {
         XMotionEvent motion_event = event->xmotion;
-        _update_dragging(display, motion_event.x_root, motion_event.y_root);
+        update_dragging(display, motion_event.x_root, motion_event.y_root);
     }
 }
 
@@ -261,9 +257,9 @@ HANDLE(Expose)
     if (event->xexpose.count == 0)
     {
         Window exposed_window = event->xexpose.window;
-        if (_is_frame(exposed_window))
+        if (is_frame(exposed_window))
         {
-            _redraw_frame(display, exposed_window);
+            redraw_frame(display, exposed_window);
         }
     }
 }
