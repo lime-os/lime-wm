@@ -10,7 +10,12 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 
+#include "limits.h"
 #include "events.h"
+#include "config.h"
+#include "utils.h"
 #include "window.h"
 #include "background.h"

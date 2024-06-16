@@ -25,3 +25,7 @@ extern void register_event_handler(int event_type, EventHandler event_handler);
     void handler_##type##line##count(EVENT_HANDLER_PARAMS)
 #define HANDLE_EXPANDED(type, line, count) HANDLE_IMPLEMENTATION(type, line, count)
 #define HANDLE(type) HANDLE_EXPANDED(type, __LINE__, __COUNTER__)
+
+// Custom event types.
+#define Prepare 128
+#define Initialize 129

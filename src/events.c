@@ -11,6 +11,14 @@ static const long event_mask =
 
 static bool isRunning = false;
 
+static void invoke_handlers(int event_type, XEvent *event, Display *display, Window window) {
+    for(int i = 0; i < event_handler_map_size; i++) {
+        if(event_handler_map[i].event_type == event_type) {
+            event_handler_map[i].event_handler(event, display, window);
+        }
+    }
+}
+
 void initialize_event_loop(Display *display, Window root_window)
 {
     if (isRunning == true)
@@ -24,6 +32,10 @@ void initialize_event_loop(Display *display, Window root_window)
 
     // Choose which events the root window should listen to.
     XSelectInput(display, root_window, event_mask);
+
+    // Invoke all preparation and initialization handler functions.
+    invoke_handlers(Prepare, NULL, display, root_window);
+    invoke_handlers(Initialize, NULL, display, root_window);
 
     // Send an initial Expose event.
     XWindowAttributes root_window_attr;
@@ -39,7 +51,8 @@ void initialize_event_loop(Display *display, Window root_window)
     XSendEvent(display, root_window, False, ExposureMask, &event);
     XFlush(display);
 
-    // Start the event loop.
+    // Start the event loop, which listens for X Events and invokes their
+    // corresponding event handler functions.
     while (1)
     {
         XNextEvent(display, &event);
