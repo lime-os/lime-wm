@@ -19,15 +19,15 @@ static cairo_surface_t *load_background_image(Display *display, const char *file
     }
 
     int screen = DefaultScreen(display);
-    int display_width = DisplayWidth(display, screen);
-    int display_height = DisplayHeight(display, screen);
+    int screen_width = DisplayWidth(display, screen);
+    int screen_height = DisplayHeight(display, screen);
     int image_width = cairo_image_surface_get_width(original_image);
     int image_height = cairo_image_surface_get_height(original_image);
 
     // Create a surface to hold the scaled image.
-    cairo_surface_t *scaled_image = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, display_width, display_height);
+    cairo_surface_t *scaled_image = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, screen_width, screen_height);
     cairo_t *cr = cairo_create(scaled_image);
-    cairo_scale(cr, (double)display_width / image_width, (double)display_height / image_height);
+    cairo_scale(cr, (double)screen_width / image_width, (double)screen_height / image_height);
     cairo_set_source_surface(cr, original_image, 0, 0);
     cairo_paint(cr);
     cairo_destroy(cr);
@@ -69,9 +69,9 @@ HANDLE(Initialize)
 
     // Prepare xlib surface.
     int screen = DefaultScreen(display);
-    int width = DisplayWidth(display, screen);
-    int height = DisplayHeight(display, screen);
-    xlib_surface = cairo_xlib_surface_create(display, root_window, DefaultVisual(display, screen), width, height);
+    int screen_width = DisplayWidth(display, screen);
+    int screen_height = DisplayHeight(display, screen);
+    xlib_surface = cairo_xlib_surface_create(display, root_window, DefaultVisual(display, screen), screen_width, screen_height);
 
     // Prepare png surface if neccessary.
     if (strcmp(background_mode, "image") == 0)
