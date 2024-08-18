@@ -9,13 +9,12 @@ still delivering all the essential functionalities that users expect from a
 modern window manager. It is an ideal choice for users who seek a balance 
 between aesthetics and productivity.
 
-## Building
+## Building & Running
 
 To build this project locally, you will need the following dependencies:
 
-> **NOTE:** The following command is intended for Debian based systems.
-
 ```bash
+# The following command is intended for Debian based systems.
 sudo apt install \
     gcc \
     make \
@@ -31,6 +30,22 @@ make
 
 This will compile the source code and generate an executable in the `./bin`
 directory.
+
+You can now either run the executable directly in order to use it as your
+primary window manager, or you can use a nested X server like `Xephyr` in order
+to run the window manager within your currently active window manager.
+
+```bash
+DISPLAY=:1 ./bin/window-manager
+Xephyr -br -ac -noreset -screen 800x600 :1
+```
+
+Then if you'd like, you could start an application on the new display as follows:
+
+```bash
+# xterm is being used as an example here, replace it with whatever you'd like.
+DISPLAY=:1 xterm &
+```
 
 ## License
 
