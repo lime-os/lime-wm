@@ -6,7 +6,7 @@ INCDIR = include
 OBJDIR = obj
 BINDIR = bin
 
-TARGET = $(BINDIR)/window-manager
+TARGET = $(BINDIR)/lime-wm
 
 SOURCES = $(wildcard $(SRCDIR)/*.c)
 OBJECTS = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))
